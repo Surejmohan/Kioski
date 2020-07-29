@@ -1,7 +1,7 @@
 from keras.models import load_model
 import cv2
 import numpy as np
-from gtts import gTTS 
+#from gtts import gTTS 
 
 
 model = load_model('model-017.model')
@@ -30,8 +30,8 @@ while(True):
         result=model.predict(reshaped)
 
         label=np.argmax(result,axis=1)[0]
-        if label == 1 :
-        	myobj = gTTS(text='No Mask', lang='en', slow=False)
+        #if label == 1 :
+        	#myobj = gTTS(text='No Mask', lang='en', slow=False)
       
         cv2.rectangle(img,(x,y),(x+w,y+h),color_dict[label],2)
         cv2.rectangle(img,(x,y-40),(x+w,y),color_dict[label],-1)
