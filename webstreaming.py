@@ -1,12 +1,18 @@
-#########################################
+# USAGE
+# python webstreaming.py --ip 0.0.0.0 --port 8000
 
-
+from flask import Response
+from flask import Flask
+from flask import render_template,redirect,url_for
+import threading
+import datetime
+import time
 from keras.models import load_model
 import cv2
 import numpy as np
 import time
-import os
 import datetime
+import os
 
 model = load_model('model-017.model')
 
@@ -17,6 +23,11 @@ labels_dict={0:'MASK',1:'NO MASK'}
 color_dict={0:(0,255,0),1:(0,0,255)}
 nomaskcount=0
 call=0
+
+lock = threading.Lock()
+app = Flask(__name__)
+
+
 
 def MaskDetection():
     count = 0
@@ -63,10 +74,10 @@ def MaskDetection():
             cv2.rectangle(img,(x,y),(x+w,y+h),color_dict[label],2)
             cv2.rectangle(img,(x,y-40),(x+w,y),color_dict[label],-1)
             if label == 0:
-                cv2.putText(img," Processing: mask found \n" + str(count) +"%" , (x, y-12),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
+                cv2.putText(img," Processing: mask found " + str(count) +"%" , (x, y-12),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
 
             if label == 1:
-                cv2.putText(img," Processing:mask not found \n" + str(nomask)+ "%" , (x, y-12),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
+                cv2.putText(img," Processing:mask not found " + str(nomask)+ "%" , (x, y-12),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
             
         if count >= 101:
             return 1
@@ -115,6 +126,7 @@ def FaceDetection():
                 
                 print("Mask Detected")
                 os.system("mpg321 mask.mp3")
+                cv2.destroyAllWindows()
                 return 2
 
             if(k == 2 and nomaskcount<3):
@@ -122,17 +134,43 @@ def FaceDetection():
                 print("No Mask Detected")
                 print("Try Again")
                 os.system("mpg321 nomask.mp3")
+                cv2.destroyAllWindows()
                 nomaskcount=nomaskcount+1
                 if(nomaskcount==3):
                     print("Mask not found.Your 3 attempt failed. You cant enter")
                     os.system("mpg321 noentry.mp3")
+                    cv2.destroyAllWindows()
                     return 1
                 time.sleep(2)
                 FaceDetection()
             if(k == 0):
                 print("Quit")
                 os.system("mpg321 noentry.mp3")
+                cv2.destroyAllWindows()
                 return 1
 
 
-FaceDetection()
+
+def Main():
+    FaceDetection()
+    time.sleep(7.0)
+    return Main()
+        
+
+
+@app.route("/")
+def index():
+    t = threading.Thread(target=Main)
+    t.daemon = True
+    t.start()
+    return render_template("index.html")
+
+    
+
+
+
+if __name__ == '__main__':
+   
+    app.run(host='0.0.0.0', port='8000', debug=True,
+        threaded=True, use_reloader=False)
+
