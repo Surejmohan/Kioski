@@ -1,12 +1,11 @@
-
 #########################################
 
 
 from keras.models import load_model
-from imutils.video import VideoStream
 import cv2
 import numpy as np
 import time
+import os
 
 model = load_model('model-017.model')
 
@@ -99,20 +98,24 @@ def FaceDetection():
             if( k == 1):
                 c = 0
                 print("Mask Detected")
+                os.system("mpg321 mask.mp3")
                 return 2
 
             if(k == 2):
                 c = 1 
                 print("No Mask Detected")
                 print("Try Again")
+                os.system("mpg321 nomask.mp3")
                 time.sleep(2)
                 FaceDetection()
                 
 
             if(k == 0):
                 print("Quit")
+                os.system("mpg321 noentry.mp3")
                 return 1
 
 
-
+os.system("mpg321 good.mp3")
+time.sleep(1)
 FaceDetection()
