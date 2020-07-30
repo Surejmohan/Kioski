@@ -14,7 +14,8 @@ face_clsfr=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 labels_dict={0:'MASK',1:'NO MASK'}
 color_dict={0:(0,255,0),1:(0,0,255)}
-
+nomaskcount=0
+call=0
 
 def MaskDetection():
     count = 0
@@ -55,10 +56,10 @@ def MaskDetection():
             cv2.rectangle(img,(x,y),(x+w,y+h),color_dict[label],2)
             cv2.rectangle(img,(x,y-40),(x+w,y),color_dict[label],-1)
             if label == 0:
-                cv2.putText(img," Processing: " + str(count) +"%" , (x+10, y-12),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
+                cv2.putText(img," Processing:mask found " + str(count) +"%" , (x+10, y-12),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
 
             if label == 1:
-                cv2.putText(img," Processing: " + str(nomask)+ "%" , (x+10, y-12),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
+                cv2.putText(img," Processing:mask not found " + str(nomask)+ "%" , (x+10, y-12),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),2)
             
             
         cv2.imshow('LIVE',img)
@@ -77,8 +78,14 @@ def MaskDetection():
 
 
 def FaceDetection():
+    global nomaskcount,call
+    if (call==0):
+        os.system('mpg321 welcome1.mp3')
+        call=1
+
 
     source=cv2.VideoCapture(0)
+    
 
     while(True):
 
@@ -89,11 +96,12 @@ def FaceDetection():
         faces=face_clsfr.detectMultiScale(gray,1.3,5)
 
         if(len(faces) == 1):
+            os.system("mpg321 welcomenote.mp3")
             print("Face Detected \n")
             print("Please Wait")
             source.release()
             time.sleep(2.0)
-    
+
             k = MaskDetection()
             if( k == 1):
                 c = 0
@@ -101,21 +109,22 @@ def FaceDetection():
                 os.system("mpg321 mask.mp3")
                 return 2
 
-            if(k == 2):
+            if(k == 2 and nomaskcount<3):
                 c = 1 
                 print("No Mask Detected")
                 print("Try Again")
                 os.system("mpg321 nomask.mp3")
+                nomaskcount=nomaskcount+1
+                if(nomaskcount==3):
+                    print("Mask not found.Your 3 attempt failed. You cant enter")
+                    os.system("mpg321 noentry.mp3")
+                    return 1
                 time.sleep(2)
                 FaceDetection()
-                
-
             if(k == 0):
                 print("Quit")
                 os.system("mpg321 noentry.mp3")
                 return 1
 
 
-os.system("mpg321 good.mp3")
-time.sleep(1)
 FaceDetection()
