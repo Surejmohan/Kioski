@@ -163,14 +163,21 @@ def index():
     t = threading.Thread(target=Main)
     t.daemon = True
     t.start()
-    return render_template("index.html")
+    return render_template("slide.html")
 
     
 
 
 
 if __name__ == '__main__':
+    import random, threading, webbrowser
+    port = 5000 + random.randint(0, 999)
+    url = "http://127.0.0.1:{0}".format(port)
+    threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
+
+    app.run(port=port, debug=False)
+    
    
-    app.run(host='0.0.0.0', port='8000', debug=True,
-        threaded=True, use_reloader=False)
+   # app.run(host='0.0.0.0', port='8000', debug=True,
+      #  threaded=True, use_reloader=False)
 
